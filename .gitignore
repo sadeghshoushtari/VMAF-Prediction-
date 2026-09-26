@@ -1,0 +1,30 @@
+# raw sources: ~37 GB, public, fetched by scripts/download_sources.sh
+sources/
+*.y4m
+*.ivf
+*.yuv
+
+# scratch / staging
+_stage/
+_newrun/
+_verify/
+_verify_stage/
+_remeas/
+_remeas_stage/
+_wallsym/
+*.tmp
+*.log
+*.out
+
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
