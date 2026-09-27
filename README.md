@@ -1,11 +1,16 @@
-# VMAF Prediction — dataset
+# VMAF Prediction
 
 Measured VMAF surfaces for the AOM-CTC test set, used to study how accurately the
 quality/rate surface of an SVT-AV1 encode can be predicted without measuring it directly.
 
-This repository currently holds the **dataset and its provenance only**. The prediction
-methods, the competitor comparison and the cost analysis are still in progress and are not
-here yet.
+It holds the dataset and its provenance, the competitor comparison, and the method sweeps run
+against them. Out-of-fold predictions are included for every configuration, so any reported
+comparison can be re-checked by resampling alone, without refitting a model.
+
+The four competitor implementations are reimplementations from their published papers, not the
+original authors' code. No public implementation exists for three of them; the VCA feature
+extractor is the only original code used. `DATASET.md` and the script docstrings record how each
+reimplementation differs from its paper.
 
 ## Contents
 
@@ -18,7 +23,20 @@ data/
   wall73.csv                  657 rows  — per-video cost measurement
   verify73.csv                372 rows  — re-encode verification record
   aomctc_class_map.tsv         96 rows  — source to AOM-CTC class
+data/competitors/
+  source_features_73.csv     SITI scalars, 73 sources
+  vca_full_features_73.csv   16 VCA statistics, 73 sources
+  clip_embeddings_73.npz     CLIP ViT-B/16 and B/32, mean+std pooled, 73 sources
+results/
+  compete73_metrics.csv      competitor comparison, 7 methods x 2 targets
+  curve_sweep73_results.csv  interpolant sweep, 42 configurations
+  feature_sweep73_results.csv, oneknot_sweep73_results.csv, probe_ladder_dinner.csv
+  oof/                       out-of-fold predictions for every configuration above
 scripts/
+  compete73.py               the competitor comparison
+  newsource_competitor_features.py   extend the competitor feature tables to new sources
+  curve_sweep73.py, curve_sweep73_family.py, feature_sweep73.py, oneknot_sweep73.py
+  probe_ladder_dinner.py     probe-resolution ladder on the worst-predicted source
   download_sources.sh        fetch the raw clips from media.xiph.org
   encode_new_sources.py      build the dense grid and the probe knots
   remeasure_all73.py         content features + per-video wall, one quiet session
