@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Merge the original 47 and the new 26 into one 73-source dataset with a single schema.
+"""PROVENANCE RECORD - this script cannot be run from this repository.
+
+It merged the original 47-source tables with the 26 newly measured sources to produce the
+73-source dataset in data/. Its inputs are the PRE-MERGE tables, which are superseded by the
+merged files and are not shipped here. It is kept because it documents exactly how the two
+halves were reconciled - the column renames, the stored_v061 handling and the repro_err
+policy - which the merged files alone do not show.
 
 The two halves were produced by different scripts and differ in three ways that are NOT free
 renames. Each is handled explicitly rather than papered over:
@@ -36,12 +42,6 @@ natural camera classes a1-a5; b1_syn and b2_scc excluded. That rule reproduces t
 """
 import os, sys
 import numpy as np, pandas as pd
-
-V = os.path.expanduser('~/vmaf')
-D = next((p for p in [r'C:/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data',
-                      '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-          if os.path.exists(f'{p}/dense_vmaf_v1.csv')), None)
-OUT = V
 
 # ---------------------------------------------------------------- dense
 o = pd.read_csv(f'{D}/dense_vmaf_v1.csv'); o['era'] = 'old47'

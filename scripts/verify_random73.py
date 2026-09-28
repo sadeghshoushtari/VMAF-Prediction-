@@ -24,21 +24,20 @@ original run's tolerance was 1e-4 on v0.6.1 (which is stored rounded) and 0.0 on
 
 -> verify73.csv
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, csv, json, shutil, subprocess, sys, time
 import numpy as np, pandas as pd
 
-V     = os.path.expanduser('~/vmaf')
-SVT   = f'{V}/tools/SVT-AV1/Bin/Release/SvtAv1EncApp'
-FF    = os.path.expanduser('~/ffmpeg-v1test/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
-FFP   = FF.replace('bin/ffmpeg', 'bin/ffprobe')
-LOCAL = f'{V}/sources'
+SVT = _paths.tool('svt')
+FF = _paths.tool('ffmpeg')
+FFP = _paths.tool('ffprobe')
+LOCAL = _paths.tool('sources')
 WINF  = '/mnt/f/Pristine Videos'
-TMP   = f'{V}/_verify'; STAGE = f'{V}/_verify_stage'
+TMP   = _paths.out('_verify'); STAGE = _paths.out('_verify_stage')
 for d in (TMP, STAGE): os.makedirs(d, exist_ok=True)
-OUT   = f'{V}/verify73.csv'
-DATA  = next((p for p in [r'C:/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data',
-                          '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-              if os.path.exists(f'{p}/dense_vmaf_v1.csv')), None)
+OUT   = _paths.data('verify73.csv')
 MODELS = [('v061', 'vmaf_v0.6.1'), ('v1', 'vmaf_v1.0.16_3d0h'), ('v1_hfr', 'vmaf_v1.0.16_hfr_3d0h')]
 SEED   = 20260926
 NSAMP  = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 50
@@ -50,9 +49,9 @@ def free_gb(p='/mnt/c'):
     except Exception: return 999.0
 
 # ---------------------------------------------------------------- the dataset
-old = pd.read_csv(f'{DATA}/dense_vmaf_v1.csv').rename(columns={'bitrate_kbps_carried': 'bitrate_kbps'})
+old = pd.read_csv(_paths.data('dense_vmaf_73.csv')).rename(columns={'bitrate_kbps_carried': 'bitrate_kbps'})
 old['era'] = 'old47'
-new = pd.read_csv(f'{V}/new_dense_v1.csv'); new['era'] = 'new26'
+new = pd.read_csv(_paths.out('new_dense_v1.csv')); new['era'] = 'new26'
 C = ['source', 'width', 'height', 'preset', 'crf', 'vmaf_v061', 'vmaf_v1', 'vmaf_v1_hfr',
      'bitrate_kbps', 'enc_time_s', 'score_s', 'era']
 d = pd.concat([old[C], new[C]], ignore_index=True)

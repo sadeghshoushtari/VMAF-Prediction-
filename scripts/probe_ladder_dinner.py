@@ -34,17 +34,19 @@ probe protocol exactly.
 
 -> probe_ladder_dinner.csv
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, csv, json, shutil, subprocess, sys, time
 import numpy as np, pandas as pd
 
-V   = os.path.expanduser('~/vmaf')
-SVT = f'{V}/tools/SVT-AV1/Bin/Release/SvtAv1EncApp'
-FF  = os.path.expanduser('~/ffmpeg-v1test/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
-FFP = FF.replace('bin/ffmpeg', 'bin/ffprobe')
+SVT = _paths.tool('svt')
+FF = _paths.tool('ffmpeg')
+FFP = _paths.tool('ffprobe')
 WINF = '/mnt/f/Pristine Videos'
-TMP  = f'{V}/_ladder'; STAGE = f'{V}/_ladder_stage'
+TMP  = _paths.out('_ladder'); STAGE = _paths.out('_ladder_stage')
 for d in (TMP, STAGE): os.makedirs(d, exist_ok=True)
-OUT = f'{V}/probe_ladder_dinner.csv'
+OUT = _paths.out('probe_ladder_dinner.csv')
 MODELS = [('v061', 'vmaf_v0.6.1'), ('v1', 'vmaf_v1.0.16_3d0h'), ('v1_hfr', 'vmaf_v1.0.16_hfr_3d0h')]
 KNOTS = [20, 33, 42, 51, 63]
 

@@ -36,6 +36,9 @@ so this sweep varies features only.
 
 -> feature_sweep73_results.csv, feature_sweep73_oof/*.npz
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, time, warnings
 import numpy as np, pandas as pd
 from sklearn.model_selection import LeaveOneGroupOut
@@ -43,24 +46,20 @@ from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.isotonic import IsotonicRegression
 warnings.filterwarnings('ignore')
 
-V    = os.path.expanduser('~/vmaf')
-DOLD = next((p for p in [r'C:/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data',
-                         '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-             if os.path.exists(f'{p}/fallback_probe.csv')), None)
-OUT    = f'{V}/feature_sweep73_results.csv'
-OOFDIR = f'{V}/feature_sweep73_oof'; os.makedirs(OOFDIR, exist_ok=True)
+OUT    = _paths.out('feature_sweep73_results.csv')
+OOFDIR = _paths.out('feature_sweep73_oof'); os.makedirs(OOFDIR, exist_ok=True)
 N_JOBS, NTREES, SEED = 6, 300, 0
 G3   = ['luma_mean', 'ti_mean', 'luma_std']
 HARD = 'DinnerSceneCropped_1920x1080_2997fps_10bit_420'
 
-dense  = pd.read_csv(f'{V}/dense_vmaf_73.csv').sort_values(['source','preset','crf']).reset_index(drop=True)
-lowres = pd.read_csv(f'{V}/lowres_vmaf_73.csv')
-featf  = pd.read_csv(f'{V}/feat_73.csv')
-MAIN   = set(open(f'{V}/mainstream_sources_73.txt').read().split())
-FB     = pd.read_csv(f'{DOLD}/fallback_probe.csv')
+dense  = pd.read_csv(_paths.data('dense_vmaf_73.csv')).sort_values(['source','preset','crf']).reset_index(drop=True)
+lowres = pd.read_csv(_paths.data('lowres_vmaf_73.csv'))
+featf  = pd.read_csv(_paths.data('feat_73.csv'))
+MAIN   = set(open(_paths.data('mainstream_sources_73.txt')).read().split())
+FB     = pd.read_csv(_paths.data('fallback_probe.csv'))
 
 CLS = {}
-for line in open(f'{V}/aomctc_class_map.tsv'):
+for line in open(_paths.data('aomctc_class_map.tsv')):
     if '\t' in line and not line.startswith('class\t'):
         c, f = line.rstrip('\n').split('\t')
         CLS[os.path.splitext(f)[0]] = c

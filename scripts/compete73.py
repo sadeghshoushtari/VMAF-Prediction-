@@ -27,6 +27,9 @@ measured, so no x-wall number for them would be defensible yet.
 
 -> compete73_metrics.csv, compete73_oof/*.npz
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, time, warnings
 import numpy as np, pandas as pd
 from sklearn.model_selection import LeaveOneGroupOut
@@ -36,23 +39,21 @@ from sklearn.decomposition import PCA
 from sklearn.isotonic import IsotonicRegression
 warnings.filterwarnings('ignore')
 
-V    = os.path.expanduser('~/vmaf')
-DOLD = '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data'
-OUT  = f'{V}/compete73_metrics.csv'
-OOF  = f'{V}/compete73_oof'; os.makedirs(OOF, exist_ok=True)
+OUT  = _paths.out('compete73_metrics.csv')
+OOF  = _paths.out('compete73_oof'); os.makedirs(OOF, exist_ok=True)
 t0 = time.time()
 def log(*a): print(f'[{time.time()-t0:7.1f}s]', *a, flush=True)
 
 # ---------------------------------------------------------------- data
-d = pd.read_csv(f'{V}/dense_vmaf_73.csv').sort_values(['source','preset','crf']).reset_index(drop=True)
-MAIN = set(open(f'{V}/mainstream_sources_73.txt').read().split())
+d = pd.read_csv(_paths.data('dense_vmaf_73.csv')).sort_values(['source','preset','crf']).reset_index(drop=True)
+MAIN = set(open(_paths.data('mainstream_sources_73.txt')).read().split())
 g = d.source.values
 
 # Unified 73-source competitor feature tables (old 47 + new 26, merged by
 # make_competitor_tables_73; identical content to the two-table load this replaced).
-sf  = pd.read_csv(f'{V}/source_features_73.csv')
-vca = pd.read_csv(f'{V}/vca_full_features_73.csv')
-_z  = np.load(f'{V}/clip_embeddings_73.npz', allow_pickle=True)
+sf  = pd.read_csv(_paths.data('source_features_73.csv'))
+vca = pd.read_csv(_paths.data('vca_full_features_73.csv'))
+_z  = np.load(_paths.data('clip_embeddings_73.npz'), allow_pickle=True)
 ES  = list(_z['source']); CLIPM = _z['vitb16']
 
 missing = sorted(set(d.source) - set(sf.source)) + sorted(set(d.source) - set(vca.source)) + \
@@ -73,8 +74,8 @@ HGBKW = dict(max_iter=400, learning_rate=0.05, max_leaf_nodes=8, min_samples_lea
 dg3 = d.merge(sf[['source']+GOOD3], on='source')
 dsi = d.merge(sf[['source']+SITI], on='source')
 dvc = d.merge(vca[['source']+VCAF], on='source')
-lowres = pd.read_csv(f'{V}/lowres_vmaf_73.csv')
-FB = pd.read_csv(f'{DOLD}/fallback_probe.csv')
+lowres = pd.read_csv(_paths.data('lowres_vmaf_73.csv'))
+FB = pd.read_csv(_paths.data('fallback_probe.csv'))
 
 def probe_table(tname):
     col = {'v061':'vmaf_lr_v061','v1':'vmaf_lr_v1'}[tname]

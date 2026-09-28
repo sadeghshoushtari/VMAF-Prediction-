@@ -24,18 +24,20 @@ Appends to verify73.csv, so re-running unify_dataset73.py folds every verified c
     python3 verify300_new.py 150      # smaller
     python3 verify300_new.py 300 --plan
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, csv, json, shutil, subprocess, sys, time
 import numpy as np, pandas as pd
 
-V     = os.path.expanduser('~/vmaf')
-SVT   = f'{V}/tools/SVT-AV1/Bin/Release/SvtAv1EncApp'
-FF    = os.path.expanduser('~/ffmpeg-v1test/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
-FFP   = FF.replace('bin/ffmpeg', 'bin/ffprobe')
-LOCAL = f'{V}/sources'
+SVT = _paths.tool('svt')
+FF = _paths.tool('ffmpeg')
+FFP = _paths.tool('ffprobe')
+LOCAL = _paths.tool('sources')
 WINF  = '/mnt/f/Pristine Videos'
-TMP   = f'{V}/_verify'; STAGE = f'{V}/_verify_stage'
+TMP   = _paths.out('_verify'); STAGE = _paths.out('_verify_stage')
 for d in (TMP, STAGE): os.makedirs(d, exist_ok=True)
-OUT   = f'{V}/verify73.csv'
+OUT   = _paths.data('verify73.csv')
 MODELS = [('v061', 'vmaf_v0.6.1'), ('v1', 'vmaf_v1.0.16_3d0h'), ('v1_hfr', 'vmaf_v1.0.16_hfr_3d0h')]
 SEED  = 20260926
 NSAMP = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 300
@@ -46,7 +48,7 @@ def free_gb(p='/mnt/c'):
     try: st = os.statvfs(p); return st.f_bavail * st.f_frsize / 1e9
     except Exception: return 999.0
 
-d = pd.read_csv(f'{V}/new_dense_v1.csv')
+d = pd.read_csv(_paths.out('new_dense_v1.csv'))
 d['era'] = 'new26'
 
 rng = np.random.default_rng(SEED)

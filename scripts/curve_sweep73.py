@@ -34,6 +34,9 @@ HONESTY
 
 -> curve_sweep73_results.csv, curve_sweep73_oof/*.npz
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, sys, json, time, warnings
 import numpy as np, pandas as pd
 from sklearn.model_selection import LeaveOneGroupOut
@@ -42,12 +45,8 @@ from sklearn.isotonic import IsotonicRegression
 from scipy.interpolate import PchipInterpolator
 warnings.filterwarnings('ignore')
 
-V    = os.path.expanduser('~/vmaf')
-DOLD = next((p for p in [r'C:/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data',
-                         '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-             if os.path.exists(f'{p}/fallback_probe.csv')), None)
-OUT    = f'{V}/curve_sweep73_results.csv'
-OOFDIR = f'{V}/curve_sweep73_oof'; os.makedirs(OOFDIR, exist_ok=True)
+OUT    = _paths.out('curve_sweep73_results.csv')
+OOFDIR = _paths.out('curve_sweep73_oof'); os.makedirs(OOFDIR, exist_ok=True)
 
 N_JOBS = 6          # machine is quiet; nothing else is running
 NTREES = 300
@@ -55,11 +54,11 @@ SEED   = 0
 G3     = ['luma_mean', 'ti_mean', 'luma_std']
 EPS    = 1e-6
 
-dense  = pd.read_csv(f'{V}/dense_vmaf_73.csv').sort_values(['source','preset','crf']).reset_index(drop=True)
-lowres = pd.read_csv(f'{V}/lowres_vmaf_73.csv')
-feat   = pd.read_csv(f'{V}/feat_73.csv')
-MAIN   = set(open(f'{V}/mainstream_sources_73.txt').read().split())
-FB     = pd.read_csv(f'{DOLD}/fallback_probe.csv')
+dense  = pd.read_csv(_paths.data('dense_vmaf_73.csv')).sort_values(['source','preset','crf']).reset_index(drop=True)
+lowres = pd.read_csv(_paths.data('lowres_vmaf_73.csv'))
+feat   = pd.read_csv(_paths.data('feat_73.csv'))
+MAIN   = set(open(_paths.data('mainstream_sources_73.txt')).read().split())
+FB     = pd.read_csv(_paths.data('fallback_probe.csv'))
 
 _c01   = lambda v: np.clip(np.asarray(v, float) / 100.0, EPS, 1 - EPS)
 logit  = lambda v: np.log(_c01(v) / (1 - _c01(v)))

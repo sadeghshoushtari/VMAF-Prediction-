@@ -15,18 +15,20 @@ Resumable: rows already present are skipped. Stops cleanly if C: runs low.
     python3 encode_new_sources.py            # everything
     python3 encode_new_sources.py pilot      # one small source, 2 presets, 2 CRFs
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, sys, subprocess, csv, json, time, re
 
-V   = os.path.expanduser('~/vmaf')
-SVT = f'{V}/tools/SVT-AV1/Bin/Release/SvtAv1EncApp'
-FF  = os.path.expanduser('~/ffmpeg-v1test/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
+SVT = _paths.tool('svt')
+FF = _paths.tool('ffmpeg')
 FP  = FF.replace('bin/ffmpeg', 'bin/ffprobe')
 WIN = r'F:\Pristine Videos'
-STAGE = f'{V}/_stage'; TMP = f'{V}/_newrun'
+STAGE = _paths.out('_stage'); TMP = _paths.out('_newrun')
 for d in (STAGE, TMP): os.makedirs(d, exist_ok=True)
 
-DENSE = f'{V}/new_dense_v1.csv'
-LOWRES = f'{V}/new_lowres_v1.csv'
+DENSE = _paths.out('new_dense_v1.csv')
+LOWRES = _paths.out('new_lowres_v1.csv')
 MODELS = [('v061','vmaf_v0.6.1'), ('v1','vmaf_v1.0.16_3d0h'), ('v1_hfr','vmaf_v1.0.16_hfr_3d0h')]
 CRFS = [20,24,27] + list(range(28,57)) + [58,60,63]
 PRESETS = list(range(1,11))

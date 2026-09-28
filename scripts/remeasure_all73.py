@@ -31,24 +31,22 @@ Sources are always read from LOCAL disk. Reading a reference off /mnt/f (drvfs, 
 
 Resumable; writes incrementally. -> wall73.csv, newfeat73.csv
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import os, re, csv, json, shutil, subprocess, sys, time
 import numpy as np, pandas as pd
 
-V    = os.path.expanduser('~/vmaf')
-SVT  = f'{V}/tools/SVT-AV1/Bin/Release/SvtAv1EncApp'
-FF   = os.path.expanduser('~/ffmpeg-v1test/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
-FFP  = FF.replace('bin/ffmpeg', 'bin/ffprobe')
-LOCAL = f'{V}/sources'                      # the original 47 live here
+SVT = _paths.tool('svt')
+FF = _paths.tool('ffmpeg')
+FFP = _paths.tool('ffprobe')
+LOCAL = _paths.tool('sources')                      # the original 47 live here
 WINF  = '/mnt/f/Pristine Videos'            # all 73 live here
-TMP   = f'{V}/_remeas'; STAGE = f'{V}/_remeas_stage'
+TMP   = _paths.out('_remeas'); STAGE = _paths.out('_remeas_stage')
 for d in (TMP, STAGE): os.makedirs(d, exist_ok=True)
 
-WALL = f'{V}/wall73.csv'
-FEAT = f'{V}/newfeat73.csv'
-DATA = next((p for p in [r'C:/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data',
-                         '/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-             if os.path.exists(f'{p}/dense_vmaf_v1.csv')), None)
-
+WALL = _paths.data('wall73.csv')
+FEAT = _paths.out('newfeat73.csv')
 N       = 3
 TOTAL_T = re.compile(r'Total Encoding Time:\s*(\d+)\s*ms')
 MODELS  = [('v061', 'vmaf_v0.6.1'), ('v1', 'vmaf_v1.0.16_3d0h')]
@@ -59,10 +57,10 @@ def free_gb(p='/mnt/c'):
     except Exception: return 999.0
 
 # ------------------------------------------------------------------ inventory
-old = pd.read_csv(f'{DATA}/dense_vmaf_v1.csv').groupby('source').agg(
+old = pd.read_csv(_paths.data('dense_vmaf_73.csv')).groupby('source').agg(
         w=('width', 'first'), h=('height', 'first')).reset_index()
 old['px'] = old.w * old.h; old['isnew'] = False
-new = pd.read_csv(f'{V}/new_dense_v1.csv').groupby('source').agg(
+new = pd.read_csv(_paths.out('new_dense_v1.csv')).groupby('source').agg(
         w=('width', 'first'), h=('height', 'first')).reset_index()
 new['px'] = new.w * new.h; new['isnew'] = True
 meta = pd.concat([old, new], ignore_index=True).sort_values('px').reset_index(drop=True)

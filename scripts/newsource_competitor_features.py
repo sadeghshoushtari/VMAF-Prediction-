@@ -19,28 +19,27 @@ The CLIP weights are already cached locally; nothing here needs the network.
 
 -> new_source_features.csv, new_vca_full_features.csv, new_clip_embeddings.npz
 """
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _paths
 import csv, os, shutil, subprocess, sys, time
 from pathlib import Path
 import numpy as np
 from scipy.ndimage import sobel, laplace
 
-V     = Path(os.path.expanduser('~/vmaf'))
 WINF  = Path('/mnt/f/Pristine Videos')
-STAGE = V / '_featstage'; STAGE.mkdir(exist_ok=True)
-VCAOUT = V / 'vca_out_new'; VCAOUT.mkdir(exist_ok=True)
-VCA   = '/home/sadegh/VCA/build/source/apps/vca/vca'
-FF    = str(Path.home() / 'ffmpeg-master-latest-linux64-gpl/bin/ffmpeg')
-FFP   = str(Path.home() / 'ffmpeg-master-latest-linux64-gpl/bin/ffprobe')
-FFDIR = str(V / 'tools/ffdir/bin/ffmpeg')        # the binary extract_clip.py used
-DOLD  = next((p for p in ['/mnt/c/Users/Sadegh/Desktop/ML/VMAF_v1_Results/data']
-              if os.path.exists(p + '/source_features.csv')), None)
-
+STAGE = Path(_paths.out('_featstage')); STAGE.mkdir(exist_ok=True)
+VCAOUT = Path(_paths.out('vca_out_new')); VCAOUT.mkdir(exist_ok=True)
+VCA = _paths.tool('vca')
+FF = _paths.tool('ffmpeg')
+FFP = _paths.tool('ffprobe')
+FFDIR = _paths.tool('ffmpeg')        # the binary extract_clip.py used
 SITI_COLS = ['si_mean','si_max','ti_mean','ti_max','luma_mean','luma_std','lap_var_mean','chroma_std','n_frames']
 N_FRAMES, SIDE = 16, 224
 SELFCHECK = ['BlueSky_360p25', 'Johnny_1280x720_60']     # two ORIGINAL sources, re-measured
 
 import pandas as pd
-NEW = sorted(set(pd.read_csv(V/'new_dense_v1.csv').source.unique()))
+NEW = sorted(set(pd.read_csv(_paths.data('dense_vmaf_73.csv')).source.unique()))
 print(f'{len(NEW)} new sources to extend', flush=True)
 
 
@@ -205,7 +204,7 @@ print(f'FEATEXT_COMPLETE in {(time.time()-t0)/60:.1f} min', flush=True)
 
 # ---------------------------------------------------------------- self-check
 print('\nSELF-CHECK: two ORIGINAL sources re-measured against the published tables')
-old_sf = pd.read_csv(f'{DOLD}/source_features.csv').set_index('source')
+old_sf = pd.read_csv(_paths.data('source_features_73.csv')).set_index('source')
 new_sf = pd.read_csv(SF).set_index('source')
 for s in SELFCHECK:
     if s not in new_sf.index: continue

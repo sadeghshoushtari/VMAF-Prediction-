@@ -1,0 +1,14 @@
+# Analysis scripts need only these.
+numpy==2.2.6
+pandas==2.3.3
+scikit-learn==1.7.2
+scipy==1.15.3
+
+# Measurement scripts additionally need (not installed by default):
+#   torch==2.12.0        CLIP embeddings, in newsource_competitor_features.py
+#   clip                 pip install git+https://github.com/openai/CLIP.git
+# and these external binaries, located via the environment variables in scripts/_paths.py:
+#   VMAF_FFMPEG / VMAF_FFPROBE   an ffmpeg build with libvmaf
+#   VMAF_SVT                     SvtAv1EncApp
+#   VMAF_VCA                     vca, github.com/cd-athena/VCA
+#   VMAF_SOURCES                 directory of raw .y4m sources
