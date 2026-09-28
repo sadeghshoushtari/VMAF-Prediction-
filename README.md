@@ -45,6 +45,48 @@ scripts/
   unify_dataset73.py         merge into the single 73-source schema
 ```
 
+## Running it
+
+```bash
+git clone https://github.com/sadeghshoushtari/VMAF-Prediction-.git
+cd VMAF-Prediction-
+pip install -r requirements.txt
+python scripts/compete73.py          # competitor comparison, ~30 min
+python scripts/curve_sweep73.py      # interpolant sweep
+```
+
+Paths are resolved relative to the repository, so nothing needs editing. Outputs are written to
+`out/`, which is gitignored, so a pull stays clean. `VMAF_DATA` and `VMAF_OUT` override the
+locations if needed.
+
+**Two tiers of script.** The analysis scripts — `compete73.py`, `curve_sweep73.py`,
+`curve_sweep73_family.py`, `feature_sweep73.py`, `oneknot_sweep73.py`, `followup_sweep73.py` —
+run from a clone with nothing but the packages above, because every measurement they need is
+already in `data/`.
+
+The measurement scripts — `encode_new_sources.py`, `remeasure_all73.py`, `verify_random73.py`,
+`verify300_new.py`, `probe_ladder_dinner.py`, `newsource_competitor_features.py` — rebuild the
+dataset from raw video and additionally need an ffmpeg with libvmaf, SvtAv1EncApp, the VCA
+binary and ~37 GB of `.y4m` sources. They locate these through the environment variables listed
+in `requirements.txt` and stop with an explicit message naming whatever is missing. Re-running
+them is only necessary to reproduce the measurements themselves.
+
+`unify_dataset73.py` is kept as a provenance record and cannot be run here; its inputs are the
+pre-merge tables, which the merged files in `data/` supersede.
+
+## Re-checking a result without refitting
+
+`results/oof/` holds the out-of-fold prediction for every configuration in every sweep, so any
+reported comparison can be re-derived by resampling alone:
+
+```python
+import numpy as np
+a = np.load('results/oof/compete73_oof/v1__ours_2knot_sqrt.npz', allow_pickle=True)
+b = np.load('results/oof/compete73_oof/v1__litevpnet.npz', allow_pickle=True)
+ok = a['ok'] & b['ok']
+print(np.abs(a['oof'][ok]-a['y'][ok]).mean(), np.abs(b['oof'][ok]-b['y'][ok]).mean())
+```
+
 ## The dataset
 
 **73 sources x 10 presets x 35 CRFs = 25,550 cells.** Each cell is one SVT-AV1 encode scored
