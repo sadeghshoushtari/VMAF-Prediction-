@@ -18,8 +18,10 @@ from pathlib import Path
 ROOT   = Path(__file__).resolve().parent.parent
 DATA   = Path(os.environ.get('VMAF_DATA', ROOT / 'data'))
 OUT    = Path(os.environ.get('VMAF_OUT',  ROOT / 'out'))
-COMPET = DATA / 'competitors'
+COMPET  = DATA / 'competitors'
+FIGURES = Path(os.environ.get('VMAF_FIGURES', ROOT / 'figures'))
 OUT.mkdir(parents=True, exist_ok=True)
+FIGURES.mkdir(parents=True, exist_ok=True)
 
 
 def data(name):
@@ -36,8 +38,13 @@ def data(name):
 
 
 def out(name):
-    """An output path under <repo>/out."""
+    """An intermediate output under <repo>/out (gitignored)."""
     return str(OUT / name)
+
+
+def figure(name):
+    """A figure under <repo>/figures. Figures are deliverables and are tracked."""
+    return str(FIGURES / name)
 
 
 _TOOL_ENV = {
