@@ -28,15 +28,16 @@ data/competitors/
   vca_full_features_73.csv   16 VCA statistics, 73 sources
   clip_embeddings_73.npz     CLIP ViT-B/16 and B/32, mean+std pooled, 73 sources
 figures/
-  vmaf_vs_crf_73_v1.png      VMAF against CRF, all 73 sources x 10 presets (and .pdf)
-  vmaf_vs_crf_73_v061.png    the same for the v0.6.1 target
+  vmaf_overview_73_v1_p7.png   all 73 sources on one axes at preset 7 (and .pdf, and v061)
+  vmaf_vs_crf_73_v1.png        the per-source atlas, 73 panels x 10 presets (and .pdf, and v061)
 results/
   compete73_metrics.csv      competitor comparison, 7 methods x 2 targets
   curve_sweep73_results.csv  interpolant sweep, 42 configurations
   feature_sweep73_results.csv, oneknot_sweep73_results.csv, probe_ladder_dinner.csv
   oof/                       out-of-fold predictions for every configuration above
 scripts/
-  plot_vmaf_curves.py        the VMAF-vs-CRF atlas above; --check verifies without drawing
+  plot_vmaf_overview.py      the single-axes overview; picks the preset by measurement
+  plot_vmaf_curves.py        the per-source atlas; --check verifies without drawing
   compete73.py               the competitor comparison
   newsource_competitor_features.py   extend the competitor feature tables to new sources
   curve_sweep73.py, curve_sweep73_family.py, feature_sweep73.py, oneknot_sweep73.py
