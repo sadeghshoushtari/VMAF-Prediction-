@@ -32,10 +32,12 @@ figures/
   vmaf_vs_crf_73_v1.png        the per-source atlas, 73 panels x 10 presets (and .pdf, and v061)
 results/
   compete73_metrics.csv      competitor comparison, 7 methods x 2 targets
+  search_baseline73.csv      prediction vs bisection search on the shared target-CRF task
   curve_sweep73_results.csv  interpolant sweep, 42 configurations
   feature_sweep73_results.csv, oneknot_sweep73_results.csv, probe_ladder_dinner.csv
   oof/                       out-of-fold predictions for every configuration above
 scripts/
+  search_baseline73.py       prediction vs search; simulated exactly from the dense grid
   plot_vmaf_overview.py      the single-axes overview; picks the preset by measurement
   plot_vmaf_curves.py        the per-source atlas; --check verifies without drawing
   compete73.py               the competitor comparison
