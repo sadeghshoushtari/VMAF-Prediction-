@@ -1,0 +1,8 @@
+,under the wall,anchored
+old method,1.7347,1.0722
+base,2.1627,1.3854
+base + 4 VMAF inputs,1.725,1.0345
+base + 10 side outputs,1.6931,0.9641
+full,1.6811,0.9589
+full without probe VMAF,2.0314,1.0859
+full without ADM,1.7369,1.0361

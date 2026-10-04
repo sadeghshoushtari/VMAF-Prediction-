@@ -1,7 +1,7 @@
 # The 73-source dataset
 
 25550 dense cells (73 sources x 10 presets x 35 CRFs), 365 probe rows,
-146 feature rows. Built by `unify_dataset73.py`.
+146 feature rows, 146 probe-libvmaf rows. Built by `unify_dataset73.py`.
 
 ## Scope
 
@@ -35,3 +35,13 @@ Every row carries `era` = `old47` or `new26`, because provenance differs:
 `mainstream_sources_73.txt` holds 49 sources. The rule, recovered from the original
 36-source list and verified to reproduce it with no counterexamples: **natural camera content
 (classes a1-a5) only**; synthetic (`b1_syn`) and screen content (`b2_scc`) are excluded.
+
+## Probe libvmaf metrics (`probe_libvmaf_73.csv`)
+
+One row per source per probe knot (73 x 2 = 146). When a probe is scored with
+`libvmaf=model=version=vmaf_v1.0.16_3d0h`, libvmaf logs the VMAF score plus 14 other metrics. This file keeps all
+15, each as `<metric>_mean`, `_min`, `_max`, `_harmonic_mean` over the frames.
+
+- `vmaf_mean` equals `vmaf_lr_v1` in `lowres_vmaf_73.csv` / `fallback_probe.csv`.
+- The VMAF v1 model uses only 4 of the 14: `cambi`, `speed_chroma_uv`, `adm3`, `motion3`. The rest are side outputs.
+- The three motion metrics are computed on the source, so they are the same at both knots.

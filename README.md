@@ -19,6 +19,7 @@ data/
   dense_vmaf_73.csv        25,550 cells — 73 sources x 10 presets x 35 CRFs
   lowres_vmaf_73.csv          365 rows  — half-resolution probe knots
   feat_73.csv                 146 rows  — content features, full and half resolution
+  probe_libvmaf_73.csv        146 rows  — all libvmaf metrics of the two probe knots
   mainstream_sources_73.txt    49 names — the natural-camera subset
   wall73.csv                  657 rows  — per-video cost measurement
   verify73.csv                372 rows  — re-encode verification record
@@ -34,9 +35,12 @@ results/
   compete73_metrics.csv      competitor comparison, 7 methods x 2 targets
   search_baseline73.csv      prediction vs bisection search on the shared target-CRF task
   feature_ablation73.csv     what the method loses when content features are removed
+  libvmaf_ablation73.csv     are the libvmaf probe metrics redundant with the probe VMAF? (+ _mae.csv)
   curve_sweep73_results.csv  interpolant sweep, 42 configurations
   feature_sweep73_results.csv, oneknot_sweep73_results.csv, probe_ladder_dinner.csv
   oof/                       out-of-fold predictions for every configuration above
+notebooks/
+  libvmaf_ablation73.ipynb   the libvmaf-metric ablation, runs from data/ alone (~1 h)
 scripts/
   feature_ablation73.py      removes GOOD-3 and the bitrate term, one at a time
   search_baseline73.py       prediction vs search; simulated exactly from the dense grid
@@ -82,6 +86,16 @@ them is only necessary to reproduce the measurements themselves.
 
 `unify_dataset73.py` is kept as a provenance record and cannot be run here; its inputs are the
 pre-merge tables, which the merged files in `data/` supersede.
+
+## Are the libvmaf metrics redundant with the VMAF score?
+
+Scoring a probe with libvmaf logs 14 metrics besides the score (`data/probe_libvmaf_73.csv`). VMAF v1 uses only 4 of
+them. `notebooks/libvmaf_ablation73.ipynb` tests whether they add anything:
+
+- They do: adding them to the probe VMAF clearly lowers the error, and the score is still needed alongside them.
+  Score and metrics carry different information.
+- The redundancy is among the metrics themselves: with the 10 metrics VMAF does not use, the 4 it does use add little.
+- With the anchor encode, use all 14. Under the wall, the 4 VMAF inputs alone do as well.
 
 ## Re-checking a result without refitting
 
