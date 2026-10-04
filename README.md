@@ -1,172 +1,58 @@
 # VMAF Prediction
 
-Measured VMAF surfaces for the AOM-CTC test set, used to study how accurately the
-quality/rate surface of an SVT-AV1 encode can be predicted without measuring it directly.
+Predict the VMAF of an SVT-AV1 encode at any CRF and preset from two cheap test encodes ("probes"),
+instead of encoding and scoring every setting. Quality is measured with VMAF v1 (`vmaf_v1.0.16_3d0h`).
 
-It holds the dataset and its provenance, the competitor comparison, and the method sweeps run
-against them. Out-of-fold predictions are included for every configuration, so any reported
-comparison can be re-checked by resampling alone, without refitting a model.
+![All 73 sources at preset 7](figures/vmaf_overview_73_v1_p7.png)
 
-The four competitor implementations are reimplementations from their published papers, not the
-original authors' code. No public implementation exists for three of them; the VCA feature
-extractor is the only original code used. `DATASET.md` and the script docstrings record how each
-reimplementation differs from its paper.
+## Data
 
-## Contents
+73 sources: the pristine SDR video part of the AOM-CTC test set.
 
-```
-data/
-  dense_vmaf_73.csv        25,550 cells — 73 sources x 10 presets x 35 CRFs
-  lowres_vmaf_73.csv          365 rows  — half-resolution probe knots
-  feat_73.csv                 146 rows  — content features, full and half resolution
-  probe_libvmaf_73.csv        146 rows  — all libvmaf metrics of the two probe knots
-  mainstream_sources_73.txt    49 names — the natural-camera subset
-  wall73.csv                  657 rows  — per-video cost measurement
-  verify73.csv                372 rows  — re-encode verification record
-  aomctc_class_map.tsv         96 rows  — source to AOM-CTC class
-data/competitors/
-  source_features_73.csv     SITI scalars, 73 sources
-  vca_full_features_73.csv   16 VCA statistics, 73 sources
-  clip_embeddings_73.npz     CLIP ViT-B/16 and B/32, mean+std pooled, 73 sources
-figures/
-  vmaf_overview_73_v1_p7.png   all 73 sources on one axes at preset 7 (and .pdf, and v061)
-  vmaf_vs_crf_73_v1.png        the per-source atlas, 73 panels x 10 presets (and .pdf, and v061)
-results/
-  compete73_metrics.csv      competitor comparison, 7 methods x 2 targets
-  search_baseline73.csv      prediction vs bisection search on the shared target-CRF task
-  feature_ablation73.csv     what the method loses when content features are removed
-  libvmaf_ablation73.csv     are the libvmaf probe metrics redundant with the probe VMAF? (+ _mae.csv)
-  curve_sweep73_results.csv  interpolant sweep, 42 configurations
-  feature_sweep73_results.csv, oneknot_sweep73_results.csv, probe_ladder_dinner.csv
-  oof/                       out-of-fold predictions for every configuration above
-notebooks/
-  libvmaf_ablation73.ipynb   the libvmaf-metric ablation, runs from data/ alone (~1 h)
-scripts/
-  feature_ablation73.py      removes GOOD-3 and the bitrate term, one at a time
-  search_baseline73.py       prediction vs search; simulated exactly from the dense grid
-  plot_vmaf_overview.py      the single-axes overview; picks the preset by measurement
-  plot_vmaf_curves.py        the per-source atlas; --check verifies without drawing
-  compete73.py               the competitor comparison
-  newsource_competitor_features.py   extend the competitor feature tables to new sources
-  curve_sweep73.py, curve_sweep73_family.py, feature_sweep73.py, oneknot_sweep73.py
-  probe_ladder_dinner.py     probe-resolution ladder on the worst-predicted source
-  download_sources.sh        fetch the raw clips from media.xiph.org
-  encode_new_sources.py      build the dense grid and the probe knots
-  remeasure_all73.py         content features + per-video wall, one quiet session
-  verify_random73.py         re-encode verification, one cell per source
-  verify300_new.py           broader re-encode verification
-  unify_dataset73.py         merge into the single 73-source schema
-```
+| file | rows | contents |
+|---|---|---|
+| `data/dense_vmaf_73.csv` | 25,550 | every encode: 73 sources x 10 presets (1-10) x 35 CRFs (20-63). `vmaf_v1`, `bitrate_kbps` |
+| `data/probe_73.csv` | 146 | the two probes of each source (CRF 20 and 51): bitrate and every metric libvmaf logs |
+| `data/good3_73.csv` | 73 | three simple content features (mean and std of luma, temporal information) |
 
-## Running it
+- Encoder: SVT-AV1 v4.0.1, default settings except `--preset` and `--crf`. Scored at full resolution.
+- Probe: preset 10 at half resolution (320x180 for the two 480x270 sources), scored with the same VMAF v1 model.
+- Probe metrics: besides the score, libvmaf logs 14 metrics, each stored as `_mean`, `_min`, `_max`,
+  `_harmonic_mean` over the frames. VMAF v1 uses only 4 of them (`cambi`, `speed_chroma_uv`, `adm3`, `motion3`);
+  the other 10 are side outputs. The motion metrics are computed on the source, so they are equal at both probes.
+- Checked: 372 randomly chosen encodes were redone from the raw source and matched exactly.
+- Per-source curves (73 panels, one line per preset): `figures/vmaf_vs_crf_73_v1.png`.
+- Raw videos (~37 GB): `scripts/download_sources.sh <folder>`.
+
+## Method
+
+A tree model (ExtraTrees) predicts VMAF at every CRF and preset from the probe VMAF, probe bitrate and the
+probe metrics. It is tested by holding out one source at a time. Two settings:
+
+- **Under the wall**: probes only. Costs about 0.8x one normal encode plus its VMAF scoring.
+- **Anchored**: plus one full-resolution encode (preset 8, CRF 40) that corrects the predicted curve. About 2.3x.
+
+## Result: are the probe metrics redundant with the probe VMAF?
+
+`notebooks/libvmaf_ablation73.ipynb` (results in `results/`). Mean absolute error in VMAF points:
+
+| model | under the wall | anchored |
+|---|---|---|
+| probe VMAF + bitrate + GOOD-3 (old method) | 1.735 | 1.072 |
+| probe VMAF + bitrate | 2.163 | 1.385 |
+| + the 4 metrics VMAF uses | 1.725 | 1.035 |
+| + the 10 metrics VMAF does not use | 1.693 | 0.964 |
+| **+ all 14 metrics** | **1.681** | **0.959** |
+| all 14 metrics, without the probe VMAF | 2.031 | 1.086 |
+
+- The metrics are not redundant with the score: adding them clearly lowers the error. The score is not redundant
+  with the metrics either: removing it makes the error clearly worse.
+- The redundancy is among the metrics: with the 10 side outputs present, the 4 metrics VMAF uses add little.
+- With the anchor, use all 14 metrics. Under the wall, the 4 metrics VMAF uses do as well as all 14.
+
+## Run
 
 ```bash
-git clone https://github.com/sadeghshoushtari/VMAF-Prediction-.git
-cd VMAF-Prediction-
 pip install -r requirements.txt
-python scripts/compete73.py          # competitor comparison, ~30 min
-python scripts/curve_sweep73.py      # interpolant sweep
+jupyter notebook notebooks/libvmaf_ablation73.ipynb   # about 1 hour on 12 cores
 ```
-
-Paths are resolved relative to the repository, so nothing needs editing. Outputs are written to
-`out/`, which is gitignored, so a pull stays clean. `VMAF_DATA` and `VMAF_OUT` override the
-locations if needed.
-
-**Two tiers of script.** The analysis scripts — `compete73.py`, `curve_sweep73.py`,
-`curve_sweep73_family.py`, `feature_sweep73.py`, `oneknot_sweep73.py`, `followup_sweep73.py` —
-run from a clone with nothing but the packages above, because every measurement they need is
-already in `data/`.
-
-The measurement scripts — `encode_new_sources.py`, `remeasure_all73.py`, `verify_random73.py`,
-`verify300_new.py`, `probe_ladder_dinner.py`, `newsource_competitor_features.py` — rebuild the
-dataset from raw video and additionally need an ffmpeg with libvmaf, SvtAv1EncApp, the VCA
-binary and ~37 GB of `.y4m` sources. They locate these through the environment variables listed
-in `requirements.txt` and stop with an explicit message naming whatever is missing. Re-running
-them is only necessary to reproduce the measurements themselves.
-
-`unify_dataset73.py` is kept as a provenance record and cannot be run here; its inputs are the
-pre-merge tables, which the merged files in `data/` supersede.
-
-## Are the libvmaf metrics redundant with the VMAF score?
-
-Scoring a probe with libvmaf logs 14 metrics besides the score (`data/probe_libvmaf_73.csv`). VMAF v1 uses only 4 of
-them. `notebooks/libvmaf_ablation73.ipynb` tests whether they add anything:
-
-- They do: adding them to the probe VMAF clearly lowers the error, and the score is still needed alongside them.
-  Score and metrics carry different information.
-- The redundancy is among the metrics themselves: with the 10 metrics VMAF does not use, the 4 it does use add little.
-- With the anchor encode, use all 14. Under the wall, the 4 VMAF inputs alone do as well.
-
-## Re-checking a result without refitting
-
-`results/oof/` holds the out-of-fold prediction for every configuration in every sweep, so any
-reported comparison can be re-derived by resampling alone:
-
-```python
-import numpy as np
-a = np.load('results/oof/compete73_oof/v1__ours_2knot_sqrt.npz', allow_pickle=True)
-b = np.load('results/oof/compete73_oof/v1__litevpnet.npz', allow_pickle=True)
-ok = a['ok'] & b['ok']
-print(np.abs(a['oof'][ok]-a['y'][ok]).mean(), np.abs(b['oof'][ok]-b['y'][ok]).mean())
-```
-
-## The dataset
-
-**73 sources x 10 presets x 35 CRFs = 25,550 cells.** Each cell is one SVT-AV1 encode scored
-with three VMAF models (`v0.6.1`, `v1.0.16`, `v1.0.16_hfr`) plus its bitrate.
-
-Scope is the complete **pristine SDR video** portion of the AOM-CTC test set — classes
-`a1_4k`, `a2_2k`, `a3_720p`, `a4_360p`, `a5_270p`, `b1_syn`, `b2_scc`. It is not all 194 files
-on the server; `DATASET.md` lists what is excluded and why.
-
-The raw `.y4m` clips are ~37 GB and are not in this repository. They are public:
-`scripts/download_sources.sh` fetches them from `media.xiph.org/video/aomctc/test_set` and
-checks each against the server's content length.
-
-## Verification
-
-Two independent levels.
-
-**Structural**, over all 25,550 cells: no duplicate `(source, preset, crf)`, no nulls, every
-source exactly 350 cells, all VMAF values inside [0,100], 2 bitrate inversions out of 25,550
-(0.008%, both under 0.71% of the mean).
-
-**Re-encode**, 372 sampled cells: each re-encoded from the raw source and re-scored, then
-compared against the stored values.
-
-```
-old47   n= 47   max |dVMAF| 0.000e+00   all-3-exact  47/47
-new26   n=325   max |dVMAF| 0.000e+00   all-3-exact 325/325
-ALL     n=372   max |dVMAF| 0.000e+00   all-3-exact 372/372
-```
-
-Every re-encoded cell reproduced bit-identically across all three models; maximum bitrate
-deviation 0.0008%, which is the stored value's rounding.
-
-Coverage is **not** uniform, and the `repro_err` column records this honestly: 100% of the
-47 original sources (from an earlier full re-score, max 2.6e-4) and 3.6% of the 26 newer ones,
-sampled to cover all 260 source x preset pairs and all 35 CRFs. `NaN` in `repro_err` means
-*not checked*, not *checked and perfect*.
-
-## Using the timing columns
-
-`enc_time_s` and `score_s` in `dense_vmaf_73.csv` are wall-clock times taken during the
-encoding campaign on a contended machine using a clock that is not monotonic on this host.
-**They are not suitable for cost claims.**
-
-Use `data/wall73.csv` instead. It was measured in one quiet session on a monotonic clock, all
-73 sources together, 3 consecutive repetitions per source with the minimum taken. It records
-the symmetric per-video wall (one full-resolution preset-10 CRF-55 encode plus its own libvmaf
-pass) and the matching cost of the two-knot probe, and stores encode time both as reported by
-the encoder and as true wall clock — the former understates the latter by 10-29%.
-
-Report cost as a ratio to the wall, never in seconds: seconds do not reproduce across sessions
-on this hardware (the same wall has measured 8.005 s and 5.766 s), while the ratios reproduce
-to within about 1%.
-
-## The `era` column
-
-Every row carries `era` = `old47` or `new26`. The two halves were measured by different scripts
-and their provenance differs in ways that are recorded rather than smoothed over — bitrate
-carried versus measured per cell, and the `repro_err` coverage above. `DATASET.md` has the
-detail.
