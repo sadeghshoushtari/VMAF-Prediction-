@@ -5,3 +5,4 @@ Is the probe VMAF score still needed with all 14 metrics?,full without probe VMA
 Are the 4 VMAF inputs needed once the 10 side outputs are in?,base + 10 side outputs  vs  full,0.012,"[-0.064, +0.088]",no,0.005,"[-0.022, +0.036]",no
 Are the ADM side outputs needed?,full without ADM  vs  full,0.056,"[-0.014, +0.127]",no,0.077,"[+0.038, +0.116]",yes
 Is the full model better than the old method?,full  vs  old method,-0.054,"[-0.195, +0.086]",no,-0.113,"[-0.185, -0.048]",yes
+Can the anchor use preset 10 instead of preset 8?,"full, anchor at preset 10  vs  full, anchor at preset 8",,,,0.283,"[+0.171, +0.409]",yes

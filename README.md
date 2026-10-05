@@ -31,6 +31,7 @@ probe metrics. It is tested by holding out one source at a time. Two settings:
 
 - **Under the wall**: probes only. Costs about 0.8x one normal encode plus its VMAF scoring.
 - **Anchored**: plus one full-resolution encode (preset 8, CRF 40) that corrects the predicted curve. About 2.3x.
+- **Anchored at preset 10**: the same encode at preset 10. Cheaper (about 1.9x, estimated) but less accurate.
 
 ## Result: are the probe metrics redundant with the probe VMAF?
 

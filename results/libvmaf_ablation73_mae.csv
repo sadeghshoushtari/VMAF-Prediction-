@@ -1,8 +1,8 @@
-,under the wall,anchored
-old method,1.7347,1.0722
-base,2.1627,1.3854
-base + 4 VMAF inputs,1.725,1.0345
-base + 10 side outputs,1.6931,0.9641
-full,1.6811,0.9589
-full without probe VMAF,2.0314,1.0859
-full without ADM,1.7369,1.0361
+,under the wall,anchored,anchored at preset 10
+old method,1.7347,1.0722,1.3602
+base,2.1627,1.3854,1.6657
+base + 4 VMAF inputs,1.725,1.0345,1.326
+base + 10 side outputs,1.6931,0.9641,1.259
+full,1.6811,0.9589,1.2426
+full without probe VMAF,2.0314,1.0859,1.3538
+full without ADM,1.7369,1.0361,1.3154
