@@ -51,6 +51,19 @@ probe metrics. It is tested by holding out one source at a time. Two settings:
 - The redundancy is among the metrics: with the 10 side outputs present, the 4 metrics VMAF uses add little.
 - With the anchor, use all 14 metrics. Under the wall, the 4 metrics VMAF uses do as well as all 14.
 
+## Result: can the anchor be encoded at preset 10?
+
+Same probes and model, only the full-resolution anchor moves from preset 8 to preset 10 (full model):
+
+| anchor | MAE | cost |
+|---|---|---|
+| none | 1.68 | 0.8x |
+| preset 10 | 1.24 | about 1.9x (estimated) |
+| preset 8 | 0.96 | 2.3x |
+
+Preset 10 saves about 18% of the time, but the error rises clearly (by 0.28, 95% interval 0.17 to 0.41). It keeps most
+of the anchor's benefit, so it is a middle option when time matters more than accuracy; preset 8 stays the accurate one.
+
 ## Run
 
 ```bash
