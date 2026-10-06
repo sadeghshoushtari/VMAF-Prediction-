@@ -14,6 +14,7 @@ instead of encoding and scoring every setting. Quality is measured with VMAF v1 
 | `data/dense_vmaf_73.csv` | 25,550 | every encode: 73 sources x 10 presets (1-10) x 35 CRFs (20-63). `vmaf_v1`, `bitrate_kbps` |
 | `data/probe_73.csv` | 146 | the two probes of each source (CRF 20 and 51): bitrate and every metric libvmaf logs |
 | `data/good3_73.csv` | 73 | three simple content features (mean and std of luma, temporal information) |
+| `data/extra_probes_73.csv` | 219 | three more probes per source (CRF 33, 42, 63): VMAF and bitrate only |
 
 - Encoder: SVT-AV1 v4.0.1, default settings except `--preset` and `--crf`. Scored at full resolution.
 - Probe: preset 10 at half resolution (320x180 for the two 480x270 sources), scored with the same VMAF v1 model.
@@ -64,9 +65,16 @@ Same probes and model, only the full-resolution anchor moves from preset 8 to pr
 Preset 10 saves about 18% of the time, but the error rises clearly (by 0.28, 95% interval 0.17 to 0.41). It keeps most
 of the anchor's benefit, so it is a middle option when time matters more than accuracy; preset 8 stays the accurate one.
 
+## Result: can more probes replace the anchor?
+
+Adding half-resolution probes at CRF 33, 42 and 63 (about 1.9x in total, the cost of the preset-10 anchor) leaves the
+error at 1.68. The two probes already describe the half-resolution curve; most of the remaining error is a constant
+offset per source caused by the difference between half and full resolution, which only a full-resolution encode
+measures.
+
 ## Run
 
 ```bash
 pip install -r requirements.txt
-jupyter notebook notebooks/libvmaf_ablation73.ipynb   # about 1 hour on 12 cores
+jupyter notebook notebooks/libvmaf_ablation73.ipynb   # about 1.5 hours on 12 cores
 ```

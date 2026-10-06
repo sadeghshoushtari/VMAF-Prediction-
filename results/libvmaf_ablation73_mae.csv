@@ -6,3 +6,5 @@ base + 10 side outputs,1.6931,0.9641,1.259
 full,1.6811,0.9589,1.2426
 full without probe VMAF,2.0314,1.0859,1.3538
 full without ADM,1.7369,1.0361,1.3154
+full + 1 extra probe,1.6783,0.9749,1.2554
+full + 3 extra probes,1.6772,0.9679,1.2603
