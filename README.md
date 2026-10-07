@@ -67,6 +67,16 @@ of the anchor's benefit, so it is a middle option when time matters more than ac
 
 ## Result: can more probes replace the anchor?
 
+Full model, all 73 sources:
+
+| setup | MAE | cost |
+|---|---|---|
+| 2 probes, no anchor | 1.68 | 0.8x |
+| 3 probes (+ CRF 33), no anchor | 1.68 | about 1.2x (estimated) |
+| 5 probes (+ CRF 33, 42, 63), no anchor | 1.68 | about 1.9x (estimated) |
+| 2 probes + anchor at preset 10 | 1.24 | about 1.9x (estimated) |
+| 2 probes + anchor at preset 8 | 0.96 | 2.3x |
+
 Adding half-resolution probes at CRF 33, 42 and 63 (about 1.9x in total, the cost of the preset-10 anchor) leaves the
 error at 1.68. The two probes already describe the half-resolution curve; most of the remaining error is a constant
 offset per source caused by the difference between half and full resolution, which only a full-resolution encode
