@@ -1,0 +1,13 @@
+model,parameters,"v1, 73 sources","v1, 12 other","v0.6.1, 47 sources","v0.6.1, 12 other"
+Ma et al. 2012,2,0.84,1.4871,0.7646,1.3158
+Q-STAR,3,1.1189,1.3713,0.9889,0.9764
+power law in CRF,3,0.9167,1.2179,0.7274,0.8307
+logistic in log q,4,0.689,0.9167,0.5186,0.5616
+"this function, quantizer axis, degree 1",2,0.9425,1.4015,0.9434,1.3149
+"this function, quantizer axis, degree 2",3,0.8357,1.1358,0.7387,0.8711
+"this function, quantizer axis, degree 3",4,0.2427,0.3063,0.2049,0.257
+"this function, quantizer axis, degree 4",5,0.1334,0.1903,0.1026,0.1199
+"this function, learned scale, degree 1",2,0.6175,1.1331,1.0147,1.8639
+"this function, learned scale, degree 2",3,0.2794,0.5516,0.2921,0.5888
+"this function, learned scale, degree 3",4,0.1178,0.2677,0.1202,0.2433
+"this function, learned scale, degree 4",5,0.0838,0.1462,0.0793,0.1272

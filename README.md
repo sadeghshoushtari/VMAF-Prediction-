@@ -15,6 +15,8 @@ instead of encoding and scoring every setting. Quality is measured with VMAF v1 
 | `data/probe_73.csv` | 146 | the two probes of each source (CRF 20 and 51): bitrate and every metric libvmaf logs |
 | `data/good3_73.csv` | 73 | three simple content features (mean and std of luma, temporal information) |
 | `data/extra_probes_73.csv` | 219 | three more probes per source (CRF 33, 42, 63): VMAF and bitrate only |
+| `data/dense_vmaf_v061_47.csv` | 16,450 | the same encodes scored with VMAF v0.6.1, for 47 of the sources |
+| `data/dense_nonpristine_12.csv` | 2,940 | 12 other AOM-CTC sources (noise, camera shake, mixed coding, grading), presets 4-10: VMAF v1 and v0.6.1, bitrate |
 
 - Encoder: SVT-AV1 v4.0.1, default settings except `--preset` and `--crf`. Scored at full resolution.
 - Probe: preset 10 at half resolution (320x180 for the two 480x270 sources), scored with the same VMAF v1 model.
@@ -82,9 +84,33 @@ error at 1.68. The two probes already describe the half-resolution curve; most o
 offset per source caused by the difference between half and full resolution, which only a full-resolution encode
 measures.
 
+## Result: one function for all VMAF-vs-CRF curves
+
+`notebooks/curve_function.ipynb`. Each curve (one source, one preset) is fitted with
+`VMAF = min(100, 100·exp(-exp(p(u))))`. `p` is a polynomial with its own coefficients per curve; `u` is a CRF scale shared
+by all sources and presets, learned from bitrate. Mean absolute error of the fit, compared with published models:
+
+| model | parameters | v1, 73 sources | v1, 12 other | v0.6.1, 47 sources | v0.6.1, 12 other |
+|---|---|---|---|---|---|
+| Ma et al. 2012 | 2 | 0.84 | 1.49 | 0.77 | 1.32 |
+| Q-STAR | 3 | 1.12 | 1.37 | 0.99 | 0.98 |
+| power law in CRF | 3 | 0.92 | 1.22 | 0.73 | 0.83 |
+| logistic in log quantizer step | 4 | 0.69 | 0.92 | 0.52 | 0.56 |
+| this function, degree 2 | 3 | 0.28 | 0.55 | 0.29 | 0.59 |
+| this function, degree 3 | 4 | 0.12 | 0.27 | 0.12 | 0.24 |
+| this function, degree 4 | 5 | 0.08 | 0.15 | 0.08 | 0.13 |
+
+- Above CRF ~55 bitrate falls much faster per CRF step. In SVT-AV1 the mode-decision lambda goes up at QP 56 and doubles
+  at QP 62, and some search tools are turned down; the learned scale follows this.
+- Presets: one curve per source, shifted and stretched along the scale for each preset (17 numbers for presets 4-10,
+  error 0.17 / 0.25). Preset 1 sits about 4 CRF steps above preset 8, preset 10 about 4 below.
+- Bitrate on the same scale: error 0.8% (73 sources) / 2.9% (12 other), against 7.7% / 11.2% for the power law of Ma et al.
+- The function describes measured curves. It does not predict the curve of a new source.
+
 ## Run
 
 ```bash
 pip install -r requirements.txt
 jupyter notebook notebooks/libvmaf_ablation73.ipynb   # about 1.5 hours on 12 cores
+jupyter notebook notebooks/curve_function.ipynb      # about 6 minutes
 ```

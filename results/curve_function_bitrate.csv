@@ -1,0 +1,5 @@
+model,parameters,73 sources,12 other
+Ma et al. 2012: R = Rmax (q/q20)^-a,2,7.663,11.224
+"plain CRF, degree 4",5,2.355,4.056
+"quantizer axis, degree 4",5,1.537,2.931
+"learned scale, degree 4",5,0.821,2.912

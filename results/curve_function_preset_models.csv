@@ -1,0 +1,4 @@
+model,numbers,73 sources,12 other
+a separate curve per preset,35,0.0871,0.1462
+"one curve, own shift and stretch per preset",17,0.1674,0.2513
+"one curve, shared profile",7,0.3303,0.4025
